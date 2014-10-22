@@ -147,11 +147,11 @@ const (
 	dateLayout = "2006-01-02T15:04:05.000-0700"
 )
 
-func (j *Jira) buildAndExecRequest(method string, url string) []byte {
+func (j *Jira) buildAndExecRequest(method string, url string) []byte, err {
 	
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		panic("Error while building jira request")
+		return err
 	}
 	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
 
@@ -159,7 +159,7 @@ func (j *Jira) buildAndExecRequest(method string, url string) []byte {
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("%s", err)
+		return err
 	}
 
 	return contents
@@ -173,27 +173,31 @@ func (j *Jira) UserActivity(user string) (ActivityFeed, error) {
 
 func (j *Jira) Activity(url string) (ActivityFeed, error) {
 
-	contents := j.buildAndExecRequest("GET", url)
-
-	var activity ActivityFeed
-	err := xml.Unmarshal(contents, &activity)
+	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		fmt.Println("%s", err)
+		return nil, err
+	}
+	var activity ActivityFeed
+	err = xml.Unmarshal(contents, &activity)
+	if err != nil {
+		return nil, err
 	}
 
 	return activity, err
 }
 
 // search issues assigned to given user
-func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueList {
+func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueList, error {
 
 	url := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" + url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) + "&maxResults=" + strconv.Itoa(maxResults)
-	contents := j.buildAndExecRequest("GET", url)
-
-	var issues IssueList
-	err := json.Unmarshal(contents, &issues)
+	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		fmt.Println("%s", err)
+		return nil, err
+	}
+	var issues IssueList
+	err = json.Unmarshal(contents, &issues)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, issue := range issues.Issues {
@@ -210,20 +214,23 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueL
 
 	issues.Pagination = &pagination
 
-	return issues
+	return issues, nil
 }
 
 // search an issue by its id
-func (j *Jira) Issue(id string) Issue {
+func (j *Jira) Issue(id string) Issue, error {
 
 	url := j.BaseUrl + j.ApiPath + "/issue/" + id
-	contents := j.buildAndExecRequest("GET", url)
-
-	var issue Issue
-	err := json.Unmarshal(contents, &issue)
+	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		fmt.Println("%s", err)
+		return nil, err
 	}
 
-	return issue
+	var issue Issue
+	err = json.Unmarshal(contents, &issue)
+	if err != nil {
+		return nil, err
+	}
+
+	return issue, nil
 }

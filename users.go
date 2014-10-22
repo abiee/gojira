@@ -66,12 +66,15 @@ Usage
 */
 func (j *Jira) User(username string) (*User, error) {
 	url := j.BaseUrl + j.ApiPath + user_url + "?username=" + username
-	contents := j.buildAndExecRequest("GET", url)
+	contents, err := j.buildAndExecRequest("GET", url)
+	if err != nil{
+		return nil, err
+	}
 
 	user := new(User)
 	err := json.Unmarshal(contents, &user)
 	if err != nil {
-		fmt.Println("%s", err)
+		return nil, err
 	}
 
 	return user, err
@@ -94,10 +97,13 @@ Parameters
 	includeInactive boolean If true, then inactive users are included in the results (default false)
 	
 */
-func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) {
+func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) error {
 	url := j.BaseUrl + j.ApiPath + user_url + "?username=" + username
-	contents := j.buildAndExecRequest("GET", url)
+	contents, err := j.buildAndExecRequest("GET", url)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(contents))
-	
 	// @todo
+	return nil
 }

@@ -234,3 +234,16 @@ func (j *Jira) Issue(id string) Issue, error {
 
 	return issue, nil
 }
+
+func (i *Issue) AddComment(comment string) err {
+	var cMap = make(map[string]string)
+	cMap["body"] = comment
+	cJson, err := json.Marshal(cMap)
+	if err != nil {
+		return err
+	}
+	url := j.BaseUrl + j.ApiPath + "/issue/" + i.Id + "/comment" + string(cJson)
+	contents := j.buildAndExecRequest("POST", url)
+	fmt.Println(string(contents))
+	return nil
+}

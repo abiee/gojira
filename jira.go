@@ -241,7 +241,7 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 	if err != nil {
 		return err
 	}
-	url := j.BaseUrl + j.ApiPath + "/issue/" + issue.Id + "/comment" + string(cJson)
+	url := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment" + string(cJson)
 	contents, err := j.buildAndExecRequest("POST", url)
 	if err != nil {
 		return err

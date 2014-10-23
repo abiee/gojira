@@ -1,16 +1,15 @@
 package gojira
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -153,18 +152,20 @@ func (j *Jira) getRequest(uri string) ([]byte, error) {
 	return j.buildAndExecRequest("GET", uri, nil)
 }
 
-func (j *Jira) postRequest(uri string, body io.Reader) ([]byte, error) {
+func (j *Jira) postJson(uri string, body *bytes.Buffer) ([]byte, error) {
 	return j.buildAndExecRequest("POST", uri, body)
 }
 
-func (j *Jira) buildAndExecRequest(method string, uri string, body io.Reader) ([]byte, error) {
+func (j *Jira) buildAndExecRequest(method string, uri string, body *bytes.Buffer) ([]byte, error) {
 
 	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
-
+	if body != nil {
+	    req.Header.Set("Content-Type", "application/json")
+	}
 	resp, err := j.Client.Do(req)
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
@@ -252,7 +253,7 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 		return err
 	}
 	uri := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment"
-	contents, err := j.postRequest(uri, strings.NewReader(string(cJson)))
+	contents, err := j.postJson(uri, bytes.NewBuffer(cJson))
 	if err != nil {
 		return err
 	}

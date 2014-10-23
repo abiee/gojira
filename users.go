@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	user_url        = "/user"
-	user_search_url = "/user/search"
+	user_uri        = "/user"
+	user_search_uri = "/user/search"
 	// http://example.com:8080/jira/rest/api/2/user/assignable/multiProjectSearch [GET]
 	// http://example.com:8080/jira/rest/api/2/user/assignable/search [GET]
 	// http://example.com:8080/jira/rest/api/2/user/avatar [POST, PUT]
@@ -64,8 +64,8 @@ Usage
 	fmt.Printf("%+v\n", user)
 */
 func (j *Jira) User(username string) (u *User, err error) {
-	url := j.BaseUrl + j.ApiPath + user_url + "?username=" + username
-	contents, err := j.buildAndExecRequest("GET", url)
+	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
+	contents, err := j.getRequest(uri)
 	if err != nil {
 		return
 	}
@@ -97,8 +97,8 @@ Parameters
 
 */
 func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) error {
-	url := j.BaseUrl + j.ApiPath + user_url + "?username=" + username
-	contents, err := j.buildAndExecRequest("GET", url)
+	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
+	contents, err := j.getRequest(uri)
 	if err != nil {
 		return err
 	}

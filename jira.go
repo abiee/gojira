@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -147,9 +149,17 @@ const (
 	dateLayout = "2006-01-02T15:04:05.000-0700"
 )
 
-func (j *Jira) buildAndExecRequest(method string, url string) ([]byte, error) {
+func (j *Jira) getRequest(uri string) ([]byte, error) {
+	return j.buildAndExecRequest("GET", uri, nil)
+}
 
-	req, err := http.NewRequest(method, url, nil)
+func (j *Jira) postRequest(uri string, body io.Reader) ([]byte, error) {
+	return j.buildAndExecRequest("POST", uri, body)
+}
+
+func (j *Jira) buildAndExecRequest(method string, uri string, body io.Reader) ([]byte, error) {
+
+	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		return nil, err
 	}
@@ -166,14 +176,14 @@ func (j *Jira) buildAndExecRequest(method string, url string) ([]byte, error) {
 }
 
 func (j *Jira) UserActivity(user string) (ActivityFeed, error) {
-	url := j.BaseUrl + j.ActivityPath + "?streams=" + url.QueryEscape("user IS "+user)
+	uri := j.BaseUrl + j.ActivityPath + "?streams=" + url.QueryEscape("user IS "+user)
 
-	return j.Activity(url)
+	return j.Activity(uri)
 }
 
-func (j *Jira) Activity(url string) (a ActivityFeed, err error) {
+func (j *Jira) Activity(uri string) (a ActivityFeed, err error) {
 
-	contents, err := j.buildAndExecRequest("GET", url)
+	contents, err := j.getRequest(uri)
 	if err != nil {
 		return
 	}
@@ -188,8 +198,8 @@ func (j *Jira) Activity(url string) (a ActivityFeed, err error) {
 // search issues assigned to given user
 func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (i IssueList, err error) {
 
-	url := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" + url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) + "&maxResults=" + strconv.Itoa(maxResults)
-	contents, err := j.buildAndExecRequest("GET", url)
+	uri := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" + url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) + "&maxResults=" + strconv.Itoa(maxResults)
+	contents, err := j.getRequest(uri)
 	if err != nil {
 		return
 	}
@@ -219,8 +229,8 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (i Iss
 // search an issue by its id
 func (j *Jira) Issue(id string) (i Issue, err error) {
 
-	url := j.BaseUrl + j.ApiPath + "/issue/" + id
-	contents, err := j.buildAndExecRequest("GET", url)
+	uri := j.BaseUrl + j.ApiPath + "/issue/" + id
+	contents, err := j.getRequest(uri)
 	if err != nil {
 		return
 	}
@@ -241,8 +251,8 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 	if err != nil {
 		return err
 	}
-	url := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment" + string(cJson)
-	contents, err := j.buildAndExecRequest("POST", url)
+	uri := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment"
+	contents, err := j.postRequest(uri, strings.NewReader(string(cJson)))
 	if err != nil {
 		return err
 	}

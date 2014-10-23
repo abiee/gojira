@@ -5,11 +5,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
-	"math"
 )
 
 type Jira struct {
@@ -100,15 +100,15 @@ type ActivityItem struct {
 }
 
 type ActivityFeed struct {
-	XMLName  xml.Name        `xml:"http://www.w3.org/2005/Atom feed"json:"xml_name"`
-	Title    string          `xml:"title"json:"title"`
-	Id       string          `xml:"id"json:"id"`
-	Link     []Link          `xml:"link"json:"link"`
-	Updated  time.Time       `xml:"updated,attr"json:"updated"`
-	Author   Person          `xml:"author"json:"author"`
-	Entries  []*ActivityItem `xml:"entry"json:"entries"`
+	XMLName xml.Name        `xml:"http://www.w3.org/2005/Atom feed"json:"xml_name"`
+	Title   string          `xml:"title"json:"title"`
+	Id      string          `xml:"id"json:"id"`
+	Link    []Link          `xml:"link"json:"link"`
+	Updated time.Time       `xml:"updated,attr"json:"updated"`
+	Author  Person          `xml:"author"json:"author"`
+	Entries []*ActivityItem `xml:"entry"json:"entries"`
 }
-	
+
 type Category struct {
 	Term string `xml:"term,attr"json:"term"`
 }
@@ -147,11 +147,11 @@ const (
 	dateLayout = "2006-01-02T15:04:05.000-0700"
 )
 
-func (j *Jira) buildAndExecRequest(method string, url string) []byte, err {
-	
+func (j *Jira) buildAndExecRequest(method string, url string) ([]byte, err) {
+
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
 
@@ -159,14 +159,14 @@ func (j *Jira) buildAndExecRequest(method string, url string) []byte, err {
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return contents
+	return contents, nil
 }
 
 func (j *Jira) UserActivity(user string) (ActivityFeed, error) {
-	url := j.BaseUrl + j.ActivityPath + "?streams=" + url.QueryEscape("user IS " + user)
+	url := j.BaseUrl + j.ActivityPath + "?streams=" + url.QueryEscape("user IS "+user)
 
 	return j.Activity(url)
 }
@@ -187,7 +187,7 @@ func (j *Jira) Activity(url string) (ActivityFeed, error) {
 }
 
 // search issues assigned to given user
-func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueList, error {
+func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (IssueList, error) {
 
 	url := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" + url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) + "&maxResults=" + strconv.Itoa(maxResults)
 	contents, err := j.buildAndExecRequest("GET", url)
@@ -201,8 +201,8 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueL
 	}
 
 	for _, issue := range issues.Issues {
-    	t, _ := time.Parse(dateLayout, issue.Fields.Created)
-    	issue.CreatedAt = t
+		t, _ := time.Parse(dateLayout, issue.Fields.Created)
+		issue.CreatedAt = t
 	}
 
 	pagination := Pagination{
@@ -218,7 +218,7 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) IssueL
 }
 
 // search an issue by its id
-func (j *Jira) Issue(id string) Issue, error {
+func (j *Jira) Issue(id string) (Issue, error) {
 
 	url := j.BaseUrl + j.ApiPath + "/issue/" + id
 	contents, err := j.buildAndExecRequest("GET", url)

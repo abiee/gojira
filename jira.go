@@ -164,9 +164,12 @@ func (j *Jira) buildAndExecRequest(method string, uri string, body *bytes.Buffer
 	}
 	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
 	if body != nil {
-	    req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", "application/json")
 	}
 	resp, err := j.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -253,7 +256,8 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 		return err
 	}
 	uri := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment"
-	contents, err := j.postJson(uri, bytes.NewBuffer(cJson))
+	body := bytes.NewBuffer(cJson)
+	contents, err := j.postJson(uri, body)
 	if err != nil {
 		return err
 	}

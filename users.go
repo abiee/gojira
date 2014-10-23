@@ -63,20 +63,20 @@ Usage
 	}
 	fmt.Printf("%+v\n", user)
 */
-func (j *Jira) User(username string) (*User, error) {
+func (j *Jira) User(username string) (u *User, err error) {
 	url := j.BaseUrl + j.ApiPath + user_url + "?username=" + username
 	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	user := new(User)
-	err := json.Unmarshal(contents, &user)
+	err = json.Unmarshal(contents, &user)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return user, err
+	return user, nil
 }
 
 /*

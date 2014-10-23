@@ -147,7 +147,7 @@ const (
 	dateLayout = "2006-01-02T15:04:05.000-0700"
 )
 
-func (j *Jira) buildAndExecRequest(method string, url string) ([]byte, err) {
+func (j *Jira) buildAndExecRequest(method string, url string) ([]byte, error) {
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
@@ -171,33 +171,32 @@ func (j *Jira) UserActivity(user string) (ActivityFeed, error) {
 	return j.Activity(url)
 }
 
-func (j *Jira) Activity(url string) (ActivityFeed, error) {
+func (j *Jira) Activity(url string) (a ActivityFeed, err error) {
 
 	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		return nil, err
+		return
 	}
 	var activity ActivityFeed
 	err = xml.Unmarshal(contents, &activity)
 	if err != nil {
-		return nil, err
+		return
 	}
-
-	return activity, err
+	return activity, nil
 }
 
 // search issues assigned to given user
-func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (IssueList, error) {
+func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (i IssueList, err error) {
 
 	url := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" + url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) + "&maxResults=" + strconv.Itoa(maxResults)
 	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		return nil, err
+		return
 	}
 	var issues IssueList
 	err = json.Unmarshal(contents, &issues)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	for _, issue := range issues.Issues {
@@ -218,32 +217,35 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (Issue
 }
 
 // search an issue by its id
-func (j *Jira) Issue(id string) (Issue, error) {
+func (j *Jira) Issue(id string) (i Issue, err error) {
 
 	url := j.BaseUrl + j.ApiPath + "/issue/" + id
 	contents, err := j.buildAndExecRequest("GET", url)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	var issue Issue
 	err = json.Unmarshal(contents, &issue)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	return issue, nil
 }
 
-func (i *Issue) AddComment(comment string) err {
+func (j *Jira) AddComment(issue *Issue, comment string) error {
 	var cMap = make(map[string]string)
 	cMap["body"] = comment
 	cJson, err := json.Marshal(cMap)
 	if err != nil {
 		return err
 	}
-	url := j.BaseUrl + j.ApiPath + "/issue/" + i.Id + "/comment" + string(cJson)
-	contents := j.buildAndExecRequest("POST", url)
+	url := j.BaseUrl + j.ApiPath + "/issue/" + issue.Id + "/comment" + string(cJson)
+	contents, err := j.buildAndExecRequest("POST", url)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(contents))
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -258,7 +257,7 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 	}
 	uri := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment"
 	body := bytes.NewBuffer(cJson)
-	_, err := j.postJson(uri, body)
+	_, err = j.postJson(uri, body)
 	if err != nil {
 		return err
 	}

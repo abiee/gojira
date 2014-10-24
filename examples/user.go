@@ -1,6 +1,7 @@
-package gojira
+package user
 
 import (
+	"code.google.com/p/gopass"
 	"flag"
 	"fmt"
 	"github.com/plouc/go-jira-client"
@@ -16,7 +17,6 @@ type Config struct {
 	ApiPath      string `yaml:"api_path"`
 	ActivityPath string `yaml:"activity_path"`
 	Login        string `yaml:"login"`
-	Password     string `yaml:"password"`
 }
 
 func TestUser() {
@@ -40,12 +40,15 @@ func TestUser() {
 	if err != nil {
 		panic(err)
 	}
-
+	pass, err := gopass.GetPass("Pass: ")
+	if err != nil {
+		panic(err.Error())
+	}
 	jira := gojira.NewJira(
 		config.Host,
 		config.ApiPath,
 		config.ActivityPath,
-		&gojira.Auth{config.Login, config.Password},
+		&gojira.Auth{config.Login, pass},
 	)
 
 	var method string

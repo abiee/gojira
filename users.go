@@ -102,7 +102,6 @@ func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeA
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(contents))
 	// @todo
 	return nil
 }

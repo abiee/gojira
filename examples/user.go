@@ -28,7 +28,7 @@ func main() {
 	help := flag.Bool("help", false, "Show usage")
 
     // read config file
-    file, e := ioutil.ReadFile("../config.yml")
+    file, e := ioutil.ReadFile("config.yml")
     if e != nil {
         fmt.Printf("Config file error: %v\n", e)
         os.Exit(1)

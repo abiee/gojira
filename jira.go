@@ -258,10 +258,9 @@ func (j *Jira) AddComment(issue *Issue, comment string) error {
 	}
 	uri := j.BaseUrl + j.ApiPath + "/issue/" + issue.Key + "/comment"
 	body := bytes.NewBuffer(cJson)
-	contents, err := j.postJson(uri, body)
+	_, err := j.postJson(uri, body)
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(contents))
 	return nil
 }

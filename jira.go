@@ -149,23 +149,24 @@ const (
 )
 
 func (j *Jira) getRequest(uri string) ([]byte, error) {
-	return j.buildAndExecRequest("GET", uri, nil)
-}
-
-func (j *Jira) postJson(uri string, body *bytes.Buffer) ([]byte, error) {
-	return j.buildAndExecRequest("POST", uri, body)
-}
-
-func (j *Jira) buildAndExecRequest(method string, uri string, body *bytes.Buffer) ([]byte, error) {
-
-	req, err := http.NewRequest(method, uri, body)
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	return j.execRequest(req)
+}
+
+func (j *Jira) postJson(uri string, body *bytes.Buffer) ([]byte, error) {
+	req, err := http.NewRequest("POST", uri, body)
+	if err != nil {
+		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
+	return j.execRequest(req)
+}
+
+func (j *Jira) execRequest(req *http.Request) ([]byte, error) {
+	req.SetBasicAuth(j.Auth.Login, j.Auth.Password)
 	resp, err := j.Client.Do(req)
 	if err != nil {
 		return nil, err

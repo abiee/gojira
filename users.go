@@ -95,12 +95,12 @@ Parameters
 	includeInactive boolean If true, then inactive users are included in the results (default false)
 
 */
-func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) error {
+func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) (c []byte, err error) {
 	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
 	contents, err := j.getRequest(uri)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// @todo
-	return nil
+	return contents, nil
 }

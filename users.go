@@ -45,23 +45,9 @@ type User struct {
 	// }
 }
 
-/*
-Returns a user. This resource cannot be accessed anonymously.
-
-    GET http://example.com:8080/jira/rest/api/2/user?username=USERNAME
-
-Parameters
-
-    username string The username
-
-Usage
-
-	user, err := jira.User("username")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Printf("%+v\n", user)
-*/
+// Returns a user by it's username. Hits the endpoint.
+//
+//  GET http://example.com:8080/jira/rest/api/2/user?username=USERNAME
 func (j *Jira) User(username string) (u *User, err error) {
 	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
 	contents, err := j.getRequest(uri)
@@ -78,23 +64,9 @@ func (j *Jira) User(username string) (u *User, err error) {
 	return user, nil
 }
 
-/*
-Returns a list of users that match the search string. This resource cannot be accessed anonymously.
-
-	GET http://example.com:8080/jira/rest/api/2/user/search
-
-Parameters
-
-	username        string  A query string used to search username, name or e-mail address
-	startAt         int     The index of the first user to return (0-based)
-	maxResults      int     The maximum number of users to return (defaults to 50).
-				   	        The maximum allowed value is 1000.
-				   	        If you specify a value that is higher than this number,
-				   	        your search results will be truncated.
-	includeActive   boolean If true, then active users are included in the results (default true)
-	includeInactive boolean If true, then inactive users are included in the results (default false)
-
-*/
+// Returns a list of users that match the search string. Hits the endpoint.
+//
+// 	GET http://example.com:8080/jira/rest/api/2/user/search
 func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) (c []byte, err error) {
 	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
 	contents, err := j.getRequest(uri)

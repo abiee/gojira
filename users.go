@@ -1,12 +1,13 @@
 package gojira
 
 import (
+	"fmt"
 	"encoding/json"
 )
 
 const (
-	user_uri        = "/user"
-	user_search_uri = "/user/search"
+	USER_URI        = "/user"
+	USER_SEARCH_URI = "/user/search"
 	// http://example.com:8080/jira/rest/api/2/user/assignable/multiProjectSearch [GET]
 	// http://example.com:8080/jira/rest/api/2/user/assignable/search [GET]
 	// http://example.com:8080/jira/rest/api/2/user/avatar [POST, PUT]
@@ -49,7 +50,7 @@ type User struct {
 //
 //  GET http://example.com:8080/jira/rest/api/2/user?username=USERNAME
 func (j *Jira) User(username string) (u *User, err error) {
-	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
+	uri := fmt.Sprintf("%s%s?username=%s", j.ApiPath, USER_URI, username)
 	contents, err := j.getRequest(uri)
 	if err != nil {
 		return
@@ -68,7 +69,7 @@ func (j *Jira) User(username string) (u *User, err error) {
 //
 // 	GET http://example.com:8080/jira/rest/api/2/user/search
 func (j *Jira) SearchUser(username string, startAt int, maxResults int, includeActive bool, includeInactive bool) (c []byte, err error) {
-	uri := j.BaseUrl + j.ApiPath + user_uri + "?username=" + username
+	uri := j.BaseUrl + j.ApiPath + USER_URI + "?username=" + username
 	contents, err := j.getRequest(uri)
 	if err != nil {
 		return nil, err

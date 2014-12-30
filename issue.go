@@ -47,7 +47,7 @@ type IssueType struct {
 
 // Search for all issues assigned to a user.
 func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (i IssueList, err error) {
-	uri := j.BaseUrl + j.ApiPath + "/search?jql=assignee=\"" +
+	uri := j.ApiPath + "/search?jql=assignee=\"" +
 		url.QueryEscape(user) + "\"&startAt=" + strconv.Itoa(startAt) +
 		"&maxResults=" + strconv.Itoa(maxResults)
 
@@ -80,7 +80,7 @@ func (j *Jira) IssuesAssignedTo(user string, maxResults int, startAt int) (i Iss
 
 // Returns an issue by it's id.
 func (j *Jira) Issue(id string) (i Issue, err error) {
-	uri := j.BaseUrl + j.ApiPath + "/issue/" + id
+	uri := j.ApiPath + "/issue/" + id
 
 	contents, err := j.getRequest(uri)
 	if err != nil {

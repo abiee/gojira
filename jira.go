@@ -52,7 +52,7 @@ func NewJira(baseUrl string, apiPath string, activityPath string, auth *Auth) *J
 
 	return &Jira{
 		BaseUrl:      baseUrl,
-		ApiPath:      apiPath,
+		ApiPath:      baseUrl + apiPath,
 		ActivityPath: activityPath,
 		Client:       client,
 		Auth:         auth,
